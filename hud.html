@@ -1,0 +1,277 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trac.king</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            color: #fff;
+            pointer-events: none;
+        }
+
+        .hud {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            width: 285px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .brand {
+            text-align: right;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, .75);
+        }
+
+        .brand span {
+            color: #7c5cff;
+        }
+
+        .subtitle {
+            margin-top: -7px;
+            text-align: right;
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, .55);
+            letter-spacing: .8px;
+            text-transform: uppercase;
+        }
+
+        .servers {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .server {
+            min-height: 58px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: linear-gradient(
+                135deg,
+                rgba(20, 20, 28, .88),
+                rgba(10, 10, 15, .82)
+            );
+            border: 1px solid rgba(255, 255, 255, .08);
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, .35),
+                inset 0 1px 0 rgba(255, 255, 255, .04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .server-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .server-name {
+            overflow: hidden;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .55);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #777;
+        }
+
+        .server.online .status-dot {
+            background: #55e58a;
+            box-shadow: 0 0 8px rgba(85, 229, 138, .8);
+        }
+
+        .server.online .status {
+            color: rgba(85, 229, 138, .9);
+        }
+
+        .server.offline {
+            opacity: .55;
+        }
+
+        .server.offline .status {
+            color: rgba(255, 100, 100, .8);
+        }
+
+        .server.offline .status-dot {
+            background: #ff6262;
+            box-shadow: 0 0 7px rgba(255, 98, 98, .55);
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, .42);
+        }
+
+        .players {
+            color: rgba(255, 255, 255, .68);
+        }
+
+        .loading,
+        .error {
+            padding: 14px;
+            text-align: center;
+            border-radius: 10px;
+            background: rgba(15, 15, 20, .8);
+            border: 1px solid rgba(255, 255, 255, .07);
+            color: rgba(255, 255, 255, .45);
+            font-size: 11px;
+        }
+
+        .error {
+            color: rgba(255, 130, 130, .75);
+        }
+
+        .updated {
+            text-align: right;
+            font-size: 9px;
+            color: rgba(255, 255, 255, .28);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hud">
+        <div class="brand">Trac<span>.king</span></div>
+        <div class="subtitle">Server status</div>
+
+        <div id="servers" class="servers">
+            <div class="loading">Загрузка серверов...</div>
+        </div>
+
+        <div id="updated" class="updated"></div>
+    </div>
+
+    <script>
+        const API_URL = "https://example.com/api/servers";
+        const UPDATE_INTERVAL = 10000;
+
+        const serversElement = document.getElementById("servers");
+        const updatedElement = document.getElementById("updated");
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function renderServers(servers) {
+            if (!Array.isArray(servers) || servers.length === 0) {
+                serversElement.innerHTML =
+                    '<div class="loading">Нет серверов</div>';
+                return;
+            }
+
+            serversElement.innerHTML = servers.map(server => {
+                const online = Boolean(server.online);
+                const players = Number(server.players || 0);
+                const maxPlayers = Number(server.maxPlayers || 0);
+
+                return `
+                    <div class="server ${online ? "online" : "offline"}">
+                        <div class="server-header">
+                            <div class="server-name">
+                                ${escapeHtml(server.name || "Unknown")}
+                            </div>
+
+                            <div class="status">
+                                <div class="status-dot"></div>
+                                <span>${online ? "ONLINE" : "OFFLINE"}</span>
+                            </div>
+                        </div>
+
+                        <div class="server-info">
+                            <span>
+                                ${online ? "Игроки" : "Сервер недоступен"}
+                            </span>
+
+                            ${
+                                online
+                                    ? `<span class="players">
+                                        ${players}${maxPlayers ? " / " + maxPlayers : ""}
+                                    </span>`
+                                    : ""
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        async function updateServers() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: "GET",
+                    cache: "no-store"
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                renderServers(data.servers);
+
+                updatedElement.textContent =
+                    "Обновлено: " +
+                    new Date().toLocaleTimeString("ru-RU");
+
+            } catch (error) {
+                console.error("[Trac.king]", error);
+
+                serversElement.innerHTML =
+                    '<div class="error">Не удалось получить статус серверов</div>';
+
+                updatedElement.textContent = "Ошибка подключения";
+            }
+        }
+
+        updateServers();
+        setInterval(updateServers, UPDATE_INTERVAL);
+    </script>
+</body>
+</html>
+```
