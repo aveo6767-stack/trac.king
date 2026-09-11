@@ -1,277 +1,284 @@
-html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trac.king</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trac.king HUD</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: transparent;
-            font-family: Inter, "Segoe UI", Arial, sans-serif;
-            color: #fff;
-            pointer-events: none;
-        }
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      color: white;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      pointer-events: none;
+    }
 
-        .hud {
-            position: fixed;
-            top: 18px;
-            right: 18px;
-            width: 285px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+    .hud {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      width: 285px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-        .brand {
-            text-align: right;
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, .75);
-        }
+    .brand {
+      text-align: right;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+    }
 
-        .brand span {
-            color: #7c5cff;
-        }
+    .brand span {
+      color: #7c5cff;
+    }
 
-        .subtitle {
-            margin-top: -7px;
-            text-align: right;
-            font-size: 11px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, .55);
-            letter-spacing: .8px;
-            text-transform: uppercase;
-        }
+    .subtitle {
+      margin-top: -7px;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.8px;
+      text-align: right;
+      text-transform: uppercase;
+    }
 
-        .servers {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-        }
+    .servers {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
 
-        .server {
-            min-height: 58px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            background: linear-gradient(
-                135deg,
-                rgba(20, 20, 28, .88),
-                rgba(10, 10, 15, .82)
-            );
-            border: 1px solid rgba(255, 255, 255, .08);
-            box-shadow:
-                0 8px 25px rgba(0, 0, 0, .35),
-                inset 0 1px 0 rgba(255, 255, 255, .04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
+    .server,
+    .loading,
+    .error {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      background: linear-gradient(
+        135deg,
+        rgba(20, 20, 28, 0.88),
+        rgba(10, 10, 15, 0.82)
+      );
+      box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
 
-        .server-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
+    .server {
+      min-height: 58px;
+      padding: 10px 12px;
+    }
 
-        .server-name {
-            overflow: hidden;
-            font-size: 13px;
-            font-weight: 700;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
+    .server-header,
+    .server-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
 
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-            font-size: 10px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, .55);
-        }
+    .server-name {
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #777;
-        }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      color: rgba(85, 229, 138, 0.9);
+      font-size: 10px;
+      font-weight: 600;
+    }
 
-        .server.online .status-dot {
-            background: #55e58a;
-            box-shadow: 0 0 8px rgba(85, 229, 138, .8);
-        }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #55e58a;
+      box-shadow: 0 0 8px rgba(85, 229, 138, 0.8);
+    }
 
-        .server.online .status {
-            color: rgba(85, 229, 138, .9);
-        }
+    .server-info {
+      margin-top: 5px;
+      color: rgba(255, 255, 255, 0.42);
+      font-size: 10px;
+    }
 
-        .server.offline {
-            opacity: .55;
-        }
+    .players {
+      color: rgba(255, 255, 255, 0.68);
+    }
 
-        .server.offline .status {
-            color: rgba(255, 100, 100, .8);
-        }
+    .loading,
+    .error {
+      padding: 14px;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 11px;
+      text-align: center;
+    }
 
-        .server.offline .status-dot {
-            background: #ff6262;
-            box-shadow: 0 0 7px rgba(255, 98, 98, .55);
-        }
+    .error {
+      color: rgba(255, 130, 130, 0.85);
+    }
 
-        .server-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 5px;
-            font-size: 10px;
-            color: rgba(255, 255, 255, .42);
-        }
-
-        .players {
-            color: rgba(255, 255, 255, .68);
-        }
-
-        .loading,
-        .error {
-            padding: 14px;
-            text-align: center;
-            border-radius: 10px;
-            background: rgba(15, 15, 20, .8);
-            border: 1px solid rgba(255, 255, 255, .07);
-            color: rgba(255, 255, 255, .45);
-            font-size: 11px;
-        }
-
-        .error {
-            color: rgba(255, 130, 130, .75);
-        }
-
-        .updated {
-            text-align: right;
-            font-size: 9px;
-            color: rgba(255, 255, 255, .28);
-        }
-    </style>
+    .updated {
+      color: rgba(255, 255, 255, 0.28);
+      font-size: 9px;
+      text-align: right;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="hud">
-        <div class="brand">Trac<span>.king</span></div>
-        <div class="subtitle">Server status</div>
+  <div class="hud">
+    <div class="brand">Trac<span>.king</span></div>
+    <div class="subtitle">Server status</div>
 
-        <div id="servers" class="servers">
-            <div class="loading">Загрузка серверов...</div>
-        </div>
-
-        <div id="updated" class="updated"></div>
+    <div id="servers" class="servers">
+      <div class="loading">Загрузка серверов...</div>
     </div>
 
-    <script type="module">
-        // WebGUI Client API.
-        // The page receives the current Minecraft client state from the mod.
-        import { clientStore, isInMod, isReady } from "https://esm.sh/@webgui/client";
+    <div id="updated" class="updated"></div>
+  </div>
 
-        const serversElement = document.getElementById("servers");
-        const updatedElement = document.getElementById("updated");
+  <script type="module">
+    const serversElement = document.getElementById("servers");
+    const updatedElement = document.getElementById("updated");
 
-        function escapeHtml(value) {
-            return String(value ?? "")
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-        }
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-        function formatPing(ping) {
-            return typeof ping === "number" ? `${Math.round(ping)} ms` : "—";
-        }
+    function formatPing(ping) {
+      return typeof ping === "number"
+        ? `${Math.round(ping)} ms`
+        : "—";
+    }
 
-        function formatServerAddress(server) {
-            if (!server?.address) return "Minecraft server";
-            return server.address;
-        }
+    function renderError(message) {
+      serversElement.innerHTML = `
+        <div class="error">${escapeHtml(message)}</div>
+      `;
+    }
 
-        function renderServer(client) {
-            if (!client) {
-                serversElement.innerHTML =
-                    '<div class="loading">Подключение к WebGUI...</div>';
-                return;
-            }
+    function render(client) {
+      if (!client) {
+        serversElement.innerHTML = `
+          <div class="loading">Подключение к Minecraft...</div>
+        `;
+        return;
+      }
 
-            const server = client.server;
-            const address = formatServerAddress(server);
-            const ping = formatPing(server?.ping);
-            const dimension = client.dimension || "—";
-            const mode = client.gamemode || "—";
+      const server = client.server ?? {};
+      const address = server.address || "Minecraft server";
+      const ping = formatPing(server.ping);
+      const dimension = client.dimension || "—";
+      const gamemode = client.gamemode || "—";
 
-            serversElement.innerHTML = `
-                <div class="server online">
-                    <div class="server-header">
-                        <div class="server-name" title="${escapeHtml(address)}">
-                            ${escapeHtml(address)}
-                        </div>
-                        <div class="status">
-                            <div class="status-dot"></div>
-                            <span>ONLINE</span>
-                        </div>
-                    </div>
+      serversElement.innerHTML = `
+        <div class="server">
+          <div class="server-header">
+            <div class="server-name" title="${escapeHtml(address)}">
+              ${escapeHtml(address)}
+            </div>
 
-                    <div class="server-info">
-                        <span>Ping</span>
-                        <span class="players">${escapeHtml(ping)}</span>
-                    </div>
+            <div class="status">
+              <span class="status-dot"></span>
+              <span>ONLINE</span>
+            </div>
+          </div>
 
-                    <div class="server-info">
-                        <span>Мир</span>
-                        <span class="players">${escapeHtml(dimension)}</span>
-                    </div>
+          <div class="server-info">
+            <span>Ping</span>
+            <span class="players">${escapeHtml(ping)}</span>
+          </div>
 
-                    <div class="server-info">
-                        <span>Режим</span>
-                        <span class="players">${escapeHtml(mode)}</span>
-                    </div>
-                </div>
-            `;
+          <div class="server-info">
+            <span>Мир</span>
+            <span class="players">${escapeHtml(dimension)}</span>
+          </div>
 
-            updatedElement.textContent =
-                "Обновлено: " + new Date().toLocaleTimeString("ru-RU");
-        }
+          <div class="server-info">
+            <span>Режим</span>
+            <span class="players">${escapeHtml(gamemode)}</span>
+          </div>
+        </div>
+      `;
 
-        function update() {
-            const client = clientStore.get();
-            renderServer(client);
-        }
+      updatedElement.textContent =
+        "Обновлено: " +
+        new Date().toLocaleTimeString("ru-RU");
+    }
+
+    async function initWebGUI() {
+      try {
+        const webgui = await import(
+          "https://esm.sh/@webgui/client"
+        );
+
+        const {
+          clientStore,
+          isInMod,
+          isReady
+        } = webgui;
 
         if (!isInMod()) {
-            serversElement.innerHTML =
-                '<div class="error">Откройте HUD внутри Minecraft через WebGUI</div>';
-            updatedElement.textContent = "WebGUI не обнаружен";
-        } else {
-            // WebGUI pushes client state every tick. Subscribe instead of polling HTTP.
-            clientStore.subscribe(update);
-            update();
-
-            if (!isReady(clientStore.get())) {
-                serversElement.innerHTML =
-                    '<div class="loading">Подключение к Minecraft...</div>';
-            }
+          renderError(
+            "HUD открыт не внутри Minecraft WebGUI"
+          );
+          updatedElement.textContent = "WebGUI не обнаружен";
+          return;
         }
-    </script>
+
+        const update = () => {
+          render(clientStore.get());
+        };
+
+        clientStore.subscribe(update);
+        update();
+
+        if (!isReady(clientStore.get())) {
+          serversElement.innerHTML = `
+            <div class="loading">
+              Получение данных Minecraft...
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error("WebGUI initialization error:", error);
+
+        renderError(
+          "Не удалось подключиться к WebGUI"
+        );
+
+        updatedElement.textContent =
+          "Ошибка загрузки API";
+      }
+    }
+
+    initWebGUI();
+  </script>
 </body>
 </html>
