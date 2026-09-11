@@ -1,4 +1,4 @@
-```html
+html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -181,15 +181,16 @@
         <div id="updated" class="updated"></div>
     </div>
 
-    <script>
-        const API_URL = "https://example.com/api/servers";
-        const UPDATE_INTERVAL = 10000;
+    <script type="module">
+        // WebGUI Client API.
+        // The page receives the current Minecraft client state from the mod.
+        import { clientStore, isInMod, isReady } from "https://esm.sh/@webgui/client";
 
         const serversElement = document.getElementById("servers");
         const updatedElement = document.getElementById("updated");
 
         function escapeHtml(value) {
-            return String(value)
+            return String(value ?? "")
                 .replaceAll("&", "&amp;")
                 .replaceAll("<", "&lt;")
                 .replaceAll(">", "&gt;")
@@ -197,81 +198,80 @@
                 .replaceAll("'", "&#039;");
         }
 
-        function renderServers(servers) {
-            if (!Array.isArray(servers) || servers.length === 0) {
+        function formatPing(ping) {
+            return typeof ping === "number" ? `${Math.round(ping)} ms` : "—";
+        }
+
+        function formatServerAddress(server) {
+            if (!server?.address) return "Minecraft server";
+            return server.address;
+        }
+
+        function renderServer(client) {
+            if (!client) {
                 serversElement.innerHTML =
-                    '<div class="loading">Нет серверов</div>';
+                    '<div class="loading">Подключение к WebGUI...</div>';
                 return;
             }
 
-            serversElement.innerHTML = servers.map(server => {
-                const online = Boolean(server.online);
-                const players = Number(server.players || 0);
-                const maxPlayers = Number(server.maxPlayers || 0);
+            const server = client.server;
+            const address = formatServerAddress(server);
+            const ping = formatPing(server?.ping);
+            const dimension = client.dimension || "—";
+            const mode = client.gamemode || "—";
 
-                return `
-                    <div class="server ${online ? "online" : "offline"}">
-                        <div class="server-header">
-                            <div class="server-name">
-                                ${escapeHtml(server.name || "Unknown")}
-                            </div>
-
-                            <div class="status">
-                                <div class="status-dot"></div>
-                                <span>${online ? "ONLINE" : "OFFLINE"}</span>
-                            </div>
+            serversElement.innerHTML = `
+                <div class="server online">
+                    <div class="server-header">
+                        <div class="server-name" title="${escapeHtml(address)}">
+                            ${escapeHtml(address)}
                         </div>
-
-                        <div class="server-info">
-                            <span>
-                                ${online ? "Игроки" : "Сервер недоступен"}
-                            </span>
-
-                            ${
-                                online
-                                    ? `<span class="players">
-                                        ${players}${maxPlayers ? " / " + maxPlayers : ""}
-                                    </span>`
-                                    : ""
-                            }
+                        <div class="status">
+                            <div class="status-dot"></div>
+                            <span>ONLINE</span>
                         </div>
                     </div>
-                `;
-            }).join("");
+
+                    <div class="server-info">
+                        <span>Ping</span>
+                        <span class="players">${escapeHtml(ping)}</span>
+                    </div>
+
+                    <div class="server-info">
+                        <span>Мир</span>
+                        <span class="players">${escapeHtml(dimension)}</span>
+                    </div>
+
+                    <div class="server-info">
+                        <span>Режим</span>
+                        <span class="players">${escapeHtml(mode)}</span>
+                    </div>
+                </div>
+            `;
+
+            updatedElement.textContent =
+                "Обновлено: " + new Date().toLocaleTimeString("ru-RU");
         }
 
-        async function updateServers() {
-            try {
-                const response = await fetch(API_URL, {
-                    method: "GET",
-                    cache: "no-store"
-                });
+        function update() {
+            const client = clientStore.get();
+            renderServer(client);
+        }
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
+        if (!isInMod()) {
+            serversElement.innerHTML =
+                '<div class="error">Откройте HUD внутри Minecraft через WebGUI</div>';
+            updatedElement.textContent = "WebGUI не обнаружен";
+        } else {
+            // WebGUI pushes client state every tick. Subscribe instead of polling HTTP.
+            clientStore.subscribe(update);
+            update();
 
-                const data = await response.json();
-
-                renderServers(data.servers);
-
-                updatedElement.textContent =
-                    "Обновлено: " +
-                    new Date().toLocaleTimeString("ru-RU");
-
-            } catch (error) {
-                console.error("[Trac.king]", error);
-
+            if (!isReady(clientStore.get())) {
                 serversElement.innerHTML =
-                    '<div class="error">Не удалось получить статус серверов</div>';
-
-                updatedElement.textContent = "Ошибка подключения";
+                    '<div class="loading">Подключение к Minecraft...</div>';
             }
         }
-
-        updateServers();
-        setInterval(updateServers, UPDATE_INTERVAL);
     </script>
 </body>
 </html>
-```
