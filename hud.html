@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Trac.king HUD</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
 
   <style>
     * {
@@ -26,8 +26,8 @@
       pointer-events: none;
     }
 
-    /* Главный HUD в правом верхнем углу */
-    .hud {
+    /* === ВЕРХНИЙ ПРАВЫЙ УГОЛ: LOGO + ONLINE === */
+    .hud-top-right {
       position: fixed;
       top: 25px;
       right: 25px;
@@ -38,7 +38,6 @@
       text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.7);
     }
 
-    /* Логотип Trac.king */
     .brand {
       font-size: 32px;
       font-weight: 900;
@@ -50,7 +49,6 @@
       color: #ffffff;
     }
 
-    /* Оранжевая точка в названии */
     .brand span {
       color: #ff7700;
       font-size: 36px;
@@ -59,12 +57,10 @@
       text-shadow: 0 0 10px rgba(255, 119, 0, 0.8);
     }
 
-    /* Блок строки с онлайн / названием сервера */
     .info-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 6px;
     }
 
     .online-text {
@@ -78,7 +74,6 @@
       font-weight: 800;
     }
 
-    /* Оранжевый бэйдж сервера */
     .server-badge {
       background: rgba(255, 119, 0, 0.15);
       backdrop-filter: blur(6px);
@@ -101,51 +96,90 @@
       fill: #ffaa55;
     }
 
-    /* Информационная строка со статусом мира и пинга */
-    .player-info {
-      font-size: 13px;
+    /* === ЛЕВЫЙ НИЖНИЙ УГОЛ: ПОГОДА, ВРЕМЯ, ДЕНЬГИ === */
+    .hud-bottom-left {
+      position: fixed;
+      bottom: 25px;
+      left: 25px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      color: #ffffff;
+      text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.85);
       font-weight: 700;
-      opacity: 0.95;
-      margin-bottom: 6px;
-      letter-spacing: 0.3px;
     }
 
-    .player-info .static-id {
-      color: #ff9933;
-      font-weight: 800;
-    }
-
-    /* Показ режима игры */
-    .gamemode-info {
+    /* Погода */
+    .weather-row {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 16px;
+      font-size: 15px;
+      letter-spacing: 0.2px;
+    }
+
+    .weather-temp {
       font-weight: 800;
-      text-transform: uppercase;
     }
 
-    .gamemode-text {
-      letter-spacing: 0.5px;
+    .weather-icon {
+      font-size: 16px;
     }
 
-    /* Оранжевые гильзы / паттерн-декор */
-    .bullet-icon {
+    .weather-desc {
+      font-weight: 700;
+      opacity: 0.95;
+    }
+
+    /* Время и дата */
+    .time-row {
       display: flex;
-      gap: 3px;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .current-time {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .current-date {
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0.8;
+    }
+
+    .day-of-week {
+      font-size: 15px;
+      font-weight: 700;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    /* Баланс / Деньги */
+    .money-row {
+      display: flex;
       align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
     }
 
-    .bullet {
-      width: 4px;
-      height: 14px;
-      background: linear-gradient(180deg, #ffaa55 0%, #ff7700 100%);
-      border-radius: 1px 1px 0 0;
-      display: inline-block;
-      box-shadow: 0 0 4px rgba(255, 119, 0, 0.6);
+    .money-icon {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+      opacity: 0.9;
     }
 
-    /* Блоки ошибок и загрузки */
+    .bank-row {
+      margin-top: -2px;
+    }
+
+    /* Индикаторы ошибок и загрузки */
     .state-badge {
       font-size: 12px;
       padding: 6px 12px;
@@ -156,42 +190,75 @@
       margin-top: 5px;
     }
 
-    .loading {
-      color: #ffaa55;
-    }
-
-    .error {
-      color: #ff5555;
-      border-color: rgba(255, 85, 85, 0.4);
-    }
-
-    .updated {
-      margin-top: 4px;
-      color: rgba(255, 255, 255, 0.35);
-      font-size: 9px;
-      font-weight: 600;
-      text-align: right;
-    }
+    .loading { color: #ffaa55; }
+    .error { color: #ff5555; border-color: rgba(255, 85, 85, 0.4); }
   </style>
 </head>
 
 <body>
-  <div class="hud" id="hud">
-    <!-- Шапка LOGO -->
+  <!-- Правый верхний угол -->
+  <div class="hud-top-right">
     <div class="brand">Trac<span>.</span>king</div>
-
-    <!-- Контейнер для данных с сервера Minecraft -->
     <div id="servers">
       <div class="state-badge loading">Загрузка WebGUI...</div>
     </div>
+  </div>
 
-    <!-- Метка времени обновления -->
-    <div id="updated" class="updated"></div>
+  <!-- Левый нижний угол (Виджет Majestic RP) -->
+  <div class="hud-bottom-left">
+    <!-- Погода -->
+    <div class="weather-row">
+      <span class="weather-temp" id="temp-val">+ 21°</span>
+      <span class="weather-icon" id="weather-icon">🌤️</span>
+      <span class="weather-desc" id="weather-desc">Облачно</span>
+    </div>
+
+    <!-- Время и дата -->
+    <div class="time-row">
+      <span class="current-time" id="clock-time">00:00</span>
+      <span class="current-date" id="clock-date">01.01.2026</span>
+    </div>
+    <div class="day-of-week" id="clock-day">Понедельник</div>
+
+    <!-- Наличные (0$ для теста) -->
+    <div class="money-row">
+      <svg class="money-icon" viewBox="0 0 24 24">
+        <path d="M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 2v8h14V8H5zm7 1a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+      </svg>
+      <span id="cash-amount">$0</span>
+    </div>
+
+    <!-- Карта / Банк (0$ для теста) -->
+    <div class="money-row bank-row">
+      <svg class="money-icon" viewBox="0 0 24 24">
+        <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+      </svg>
+      <span id="bank-amount">$0</span>
+    </div>
   </div>
 
   <script type="module">
     const serversElement = document.getElementById("servers");
-    const updatedElement = document.getElementById("updated");
+
+    // Функция обновления часов реального времени
+    function updateClock() {
+      const now = new Date();
+
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock-time').textContent = `${hours}:${minutes}`;
+
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      document.getElementById('clock-date').textContent = `${day}.${month}.${year}`;
+
+      const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+      document.getElementById('clock-day').textContent = daysOfWeek[now.getDay()];
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -200,12 +267,6 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
-    }
-
-    function formatPing(ping) {
-      return typeof ping === "number"
-        ? `${Math.round(ping)} ms`
-        : "—";
     }
 
     function renderError(message) {
@@ -217,22 +278,20 @@
     function render(client) {
       if (!client) {
         serversElement.innerHTML = `
-          <div class="state-badge loading">Подключение к Minecraft...</div>
+          <div class="state-badge loading">Подключение...</div>
         `;
         return;
       }
 
       const server = client.server ?? {};
       const address = server.address || "Singleplayer";
-      const ping = formatPing(server.ping);
-      const dimension = client.dimension || "overworld";
-      const gamemode = client.gamemode || "SURVIVAL";
+      const onlinePlayers = server.players?.online ?? "—";
 
+      // Обновляем правый верхний угол
       serversElement.innerHTML = `
-        <!-- Онлайн / Пинг и Название сервера -->
         <div class="info-row">
           <div class="online-text">
-            Ping: <span class="online-count">${escapeHtml(ping)}</span>
+            Online: <span class="online-count">${escapeHtml(onlinePlayers)}</span>
           </div>
           <div class="server-badge" title="${escapeHtml(address)}">
             <svg class="server-icon" viewBox="0 0 24 24">
@@ -241,26 +300,35 @@
             <span>${escapeHtml(address)}</span>
           </div>
         </div>
-
-        <!-- Игровая информация (Мир) -->
-        <div class="player-info">
-          WORLD: <span class="static-id">#${escapeHtml(dimension)}</span>
-        </div>
-
-        <!-- Режим игры (Gamemode) -->
-        <div class="gamemode-info">
-          <span class="gamemode-text">${escapeHtml(gamemode)}</span>
-          <div class="bullet-icon">
-            <div class="bullet"></div>
-            <div class="bullet"></div>
-            <div class="bullet"></div>
-          </div>
-        </div>
       `;
 
-      updatedElement.textContent =
-        "Обновлено: " +
-        new Date().toLocaleTimeString("ru-RU");
+      // Динамическая обработка игровой погоды Minecraft из WebGUI
+      if (client.world) {
+        const isRaining = client.world.isRaining;
+        const isThundering = client.world.isThundering;
+
+        let temp = "+ 21°";
+        let icon = "🌤️";
+        let desc = "Облачно";
+
+        if (isThundering) {
+          temp = "+ 14°";
+          icon = "⛈️";
+          desc = "Гроза";
+        } else if (isRaining) {
+          temp = "+ 16°";
+          icon = "🌧️";
+          desc = "Дождь";
+        } else {
+          temp = "+ 22°";
+          icon = "☀️";
+          desc = "Ясно";
+        }
+
+        document.getElementById("temp-val").textContent = temp;
+        document.getElementById("weather-icon").textContent = icon;
+        document.getElementById("weather-desc").textContent = desc;
+      }
     }
 
     async function initWebGUI() {
@@ -269,17 +337,10 @@
           "https://esm.sh/@webgui/client"
         );
 
-        const {
-          clientStore,
-          isInMod,
-          isReady
-        } = webgui;
+        const { clientStore, isInMod, isReady } = webgui;
 
         if (!isInMod()) {
-          renderError(
-            "HUD открыт не внутри Minecraft WebGUI"
-          );
-          updatedElement.textContent = "WebGUI не обнаружен";
+          renderError("HUD открыт не внутри Minecraft WebGUI");
           return;
         }
 
@@ -292,20 +353,12 @@
 
         if (!isReady(clientStore.get())) {
           serversElement.innerHTML = `
-            <div class="state-badge loading">
-              Получение данных Minecraft...
-            </div>
+            <div class="state-badge loading">Получение данных...</div>
           `;
         }
       } catch (error) {
         console.error("WebGUI initialization error:", error);
-
-        renderError(
-          "Не удалось подключиться к WebGUI"
-        );
-
-        updatedElement.textContent =
-          "Ошибка загрузки API";
+        renderError("Ошибка подключения WebGUI");
       }
     }
 
