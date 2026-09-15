@@ -4,10 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Trac.king HUD</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
 
   <style>
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+      user-select: none;
     }
 
     html,
@@ -18,143 +23,169 @@
       overflow: hidden;
       background: transparent;
       color: white;
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
       pointer-events: none;
     }
 
+    /* Главный HUD в правом верхнем углу */
     .hud {
       position: fixed;
-      top: 18px;
-      right: 18px;
-      width: 285px;
+      top: 25px;
+      right: 25px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      align-items: flex-end;
+      color: #ffffff;
+      text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.7);
     }
 
+    /* Логотип Trac.king */
     .brand {
-      text-align: right;
-      font-size: 24px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
-    }
-
-    .brand span {
-      color: #7c5cff;
-    }
-
-    .subtitle {
-      margin-top: -7px;
-      color: rgba(255, 255, 255, 0.55);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.8px;
-      text-align: right;
-      text-transform: uppercase;
-    }
-
-    .servers {
+      font-size: 32px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
       display: flex;
-      flex-direction: column;
-      gap: 7px;
+      align-items: baseline;
+      color: #ffffff;
     }
 
-    .server,
-    .loading,
-    .error {
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      background: linear-gradient(
-        135deg,
-        rgba(20, 20, 28, 0.88),
-        rgba(10, 10, 15, 0.82)
-      );
-      box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    /* Оранжевая точка в названии */
+    .brand span {
+      color: #ff7700;
+      font-size: 36px;
+      line-height: 0;
+      margin: 0 1px;
+      text-shadow: 0 0 10px rgba(255, 119, 0, 0.8);
     }
 
-    .server {
-      min-height: 58px;
-      padding: 10px 12px;
-    }
-
-    .server-header,
-    .server-info {
+    /* Блок строки с онлайн / названием сервера */
+    .info-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
+      margin-bottom: 6px;
     }
 
-    .server-name {
-      overflow: hidden;
-      font-size: 13px;
+    .online-text {
+      font-size: 14px;
       font-weight: 700;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      color: #ffffff;
+      letter-spacing: 0.2px;
     }
 
-    .status {
+    .online-count {
+      font-weight: 800;
+    }
+
+    /* Оранжевый бэйдж сервера */
+    .server-badge {
+      background: rgba(255, 119, 0, 0.15);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 3px 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       gap: 6px;
-      flex-shrink: 0;
-      color: rgba(85, 229, 138, 0.9);
-      font-size: 10px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 119, 0, 0.4);
+      box-shadow: 0 0 8px rgba(255, 119, 0, 0.2);
+      color: #ffaa55;
     }
 
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #55e58a;
-      box-shadow: 0 0 8px rgba(85, 229, 138, 0.8);
+    .server-icon {
+      width: 12px;
+      height: 12px;
+      fill: #ffaa55;
     }
 
-    .server-info {
+    /* Информационная строка со статусом мира и пинга */
+    .player-info {
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0.95;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .player-info .static-id {
+      color: #ff9933;
+      font-weight: 800;
+    }
+
+    /* Показ режима игры */
+    .gamemode-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .gamemode-text {
+      letter-spacing: 0.5px;
+    }
+
+    /* Оранжевые гильзы / паттерн-декор */
+    .bullet-icon {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .bullet {
+      width: 4px;
+      height: 14px;
+      background: linear-gradient(180deg, #ffaa55 0%, #ff7700 100%);
+      border-radius: 1px 1px 0 0;
+      display: inline-block;
+      box-shadow: 0 0 4px rgba(255, 119, 0, 0.6);
+    }
+
+    /* Блоки ошибок и загрузки */
+    .state-badge {
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(18, 18, 18, 0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       margin-top: 5px;
-      color: rgba(255, 255, 255, 0.42);
-      font-size: 10px;
     }
 
-    .players {
-      color: rgba(255, 255, 255, 0.68);
-    }
-
-    .loading,
-    .error {
-      padding: 14px;
-      color: rgba(255, 255, 255, 0.55);
-      font-size: 11px;
-      text-align: center;
+    .loading {
+      color: #ffaa55;
     }
 
     .error {
-      color: rgba(255, 130, 130, 0.85);
+      color: #ff5555;
+      border-color: rgba(255, 85, 85, 0.4);
     }
 
     .updated {
-      color: rgba(255, 255, 255, 0.28);
+      margin-top: 4px;
+      color: rgba(255, 255, 255, 0.35);
       font-size: 9px;
+      font-weight: 600;
       text-align: right;
     }
   </style>
 </head>
 
 <body>
-  <div class="hud">
-    <div class="brand">Trac<span>.king</span></div>
-    <div class="subtitle">Server status</div>
+  <div class="hud" id="hud">
+    <!-- Шапка LOGO -->
+    <div class="brand">Trac<span>.</span>king</div>
 
-    <div id="servers" class="servers">
-      <div class="loading">Загрузка серверов...</div>
+    <!-- Контейнер для данных с сервера Minecraft -->
+    <div id="servers">
+      <div class="state-badge loading">Загрузка WebGUI...</div>
     </div>
 
+    <!-- Метка времени обновления -->
     <div id="updated" class="updated"></div>
   </div>
 
@@ -179,50 +210,50 @@
 
     function renderError(message) {
       serversElement.innerHTML = `
-        <div class="error">${escapeHtml(message)}</div>
+        <div class="state-badge error">${escapeHtml(message)}</div>
       `;
     }
 
     function render(client) {
       if (!client) {
         serversElement.innerHTML = `
-          <div class="loading">Подключение к Minecraft...</div>
+          <div class="state-badge loading">Подключение к Minecraft...</div>
         `;
         return;
       }
 
       const server = client.server ?? {};
-      const address = server.address || "Minecraft server";
+      const address = server.address || "Singleplayer";
       const ping = formatPing(server.ping);
-      const dimension = client.dimension || "—";
-      const gamemode = client.gamemode || "—";
+      const dimension = client.dimension || "overworld";
+      const gamemode = client.gamemode || "SURVIVAL";
 
       serversElement.innerHTML = `
-        <div class="server">
-          <div class="server-header">
-            <div class="server-name" title="${escapeHtml(address)}">
-              ${escapeHtml(address)}
-            </div>
-
-            <div class="status">
-              <span class="status-dot"></span>
-              <span>ONLINE</span>
-            </div>
+        <!-- Онлайн / Пинг и Название сервера -->
+        <div class="info-row">
+          <div class="online-text">
+            Ping: <span class="online-count">${escapeHtml(ping)}</span>
           </div>
-
-          <div class="server-info">
-            <span>Ping</span>
-            <span class="players">${escapeHtml(ping)}</span>
+          <div class="server-badge" title="${escapeHtml(address)}">
+            <svg class="server-icon" viewBox="0 0 24 24">
+              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M9,8A1.5,1.5 0 0,0 7.5,9.5A1.5,1.5 0 0,0 9,11A1.5,1.5 0 0,0 10.5,9.5A1.5,1.5 0 0,0 9,8M15,8A1.5,1.5 0 0,0 13.5,9.5A1.5,1.5 0 0,0 15,11A1.5,1.5 0 0,0 16.5,9.5A1.5,1.5 0 0,0 15,8M12,14C10,14 8.5,15.5 8.5,17H15.5C15.5,15.5 14,14 12,14Z"/>
+            </svg>
+            <span>${escapeHtml(address)}</span>
           </div>
+        </div>
 
-          <div class="server-info">
-            <span>Мир</span>
-            <span class="players">${escapeHtml(dimension)}</span>
-          </div>
+        <!-- Игровая информация (Мир) -->
+        <div class="player-info">
+          WORLD: <span class="static-id">#${escapeHtml(dimension)}</span>
+        </div>
 
-          <div class="server-info">
-            <span>Режим</span>
-            <span class="players">${escapeHtml(gamemode)}</span>
+        <!-- Режим игры (Gamemode) -->
+        <div class="gamemode-info">
+          <span class="gamemode-text">${escapeHtml(gamemode)}</span>
+          <div class="bullet-icon">
+            <div class="bullet"></div>
+            <div class="bullet"></div>
+            <div class="bullet"></div>
           </div>
         </div>
       `;
@@ -261,7 +292,7 @@
 
         if (!isReady(clientStore.get())) {
           serversElement.innerHTML = `
-            <div class="loading">
+            <div class="state-badge loading">
               Получение данных Minecraft...
             </div>
           `;
